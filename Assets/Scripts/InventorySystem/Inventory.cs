@@ -39,6 +39,13 @@ namespace InventorySystem
                 if (TryAddItem(item))
                     Destroy(item.gameObject);
             }
+            if (Input.GetKeyDown(KeyCode.F))
+            {
+                GameItem item = Instantiate(GameItemsCollector.Instance.GetItem(0));
+
+                if (TryAddItem(item))
+                    Destroy(item.gameObject);
+            }
         }
         public bool TryMergeCells()//тут добавить from to с типом либо вектора, либо ячеек
         {
