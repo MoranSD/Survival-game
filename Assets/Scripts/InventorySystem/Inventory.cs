@@ -4,8 +4,8 @@ using GameItems;
 
 namespace InventorySystem
 {
-	public class Inventory : MonoBehaviour
-	{
+    public class Inventory : MonoBehaviour
+    {
         /*
          * тут помимо основных данных предмета, можно будет добавить уникальную дл€ каждого
          */
@@ -34,7 +34,7 @@ namespace InventorySystem
         {
             if (Input.GetKeyDown(KeyCode.E))
             {
-                GameItem item = Instantiate(GameItemsCollector.Instance.GetItem(0));
+                GameItem item = Instantiate(GameItemsCollector.Instance.GetItem(1));
 
                 if (TryAddItem(item))
                     Destroy(item.gameObject);
@@ -46,16 +46,16 @@ namespace InventorySystem
         }
         public bool TryAddItem(GameItem gameItem)
         {
-            InventoryCell freeCell = GetFreeCell();
+            InventoryCell freeCell;
+            if (gameItem.BaseData.IsStackable) freeCell = GetFreeCellWithStackableItem(gameItem.BaseData.Id, gameItem.BaseData.currentCount);
+            else freeCell = GetFreeCell();
 
-            //тут потом добавить поиск свободной €чейки по типу и количеству
-            if(freeCell != null)
+            if (freeCell != null)
             {
-                freeCell.Render(gameItem.BaseData);
+                if (freeCell.IsEmpty) Items.Add(freeCell.GridPosition, new GameItemInventoryData(gameItem.BaseData, gameItem.UnicData));
+                else Items[freeCell.GridPosition].baseData.currentCount += gameItem.BaseData.currentCount;
 
-                Items.Add(freeCell.GridPosition, new GameItemInventoryData(gameItem.BaseData, gameItem.UnicData));
-
-                UpdateCells();
+                freeCell.Render(Items[freeCell.GridPosition].baseData);
                 return true;
             }
 
@@ -71,7 +71,37 @@ namespace InventorySystem
 
             return null;
         }
-        //перезаписывает информацию в €чейках в зависимости от данных в инвентаре
+        private InventoryCell GetFreeCellWithStackableItem(int itemId, int neededSlotsCount)
+        {
+            if (CheckCells(_mainCells, out InventoryCell mainCell)) return mainCell;
+            if (CheckCells(_fastCells, out InventoryCell fastCell)) return fastCell;
+            return GetFreeCell();
+
+
+
+            bool CheckCells(InventoryCell[] cells, out InventoryCell returnCell)
+            {
+                for (int i = 0; i < cells.Length; i++)
+                {
+                    if (cells[i].IsEmpty == false)
+                    {
+                        BaseGameItemData itemData = Items[cells[i].GridPosition].baseData;
+                        if (itemData.Id == itemId)
+                        {
+                            int freeSlotsInCell = itemData.maxStackCount - itemData.currentCount;
+                            if (freeSlotsInCell >= neededSlotsCount)
+                            {
+                                returnCell = cells[i];
+                                return true;
+                            }
+                        }
+                    }
+                }
+
+                returnCell = null;
+                return false;
+            }
+        }
         private void UpdateCells()
         {
             for (int i = 0; i < _mainCells.Length; i++)
@@ -130,7 +160,7 @@ namespace InventorySystem
         {
             return false;
         }
-	}
+    }
     public class GameItemInventoryData
     {
         public BaseGameItemData baseData;
