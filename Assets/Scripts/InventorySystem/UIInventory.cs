@@ -26,8 +26,16 @@ namespace InventorySystem
             _fastCellsContainer = fastCellsContainer;
             _cellPrefab = cellPrefab;
         }
-        public void Show() => _panel.SetActive(true);
-        public void Hide() => _panel.SetActive(false);
+        public void Show()
+        {
+            _panel.SetActive(true);
+            IsVisible = true;
+        }
+        public void Hide()
+        {
+            _panel.SetActive(false);
+            IsVisible = false;
+        }
         public void CreateCells()
         {
             _mainCells = new InventoryCell[Inventory.Columns * Inventory.Rows];

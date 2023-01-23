@@ -954,6 +954,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _mainCanvas: {fileID: 2102439895}
+  _menuPanel: {fileID: 107842013}
   _mainCellsContainer: {fileID: 1721471486}
   _fastCellsContainer: {fileID: 1193103716}
   _cellPrefab: {fileID: 6064047174973391992, guid: dab69498a90b3a3438c00c88f6d49ecc, type: 3}
