@@ -81,7 +81,7 @@ namespace InventorySystem
             }
             else
             {
-                throw new System.Exception("There is no item data for this cell");
+                cell.ResetRender();
             }
         }
         public InventoryCell GetFreeCell()
