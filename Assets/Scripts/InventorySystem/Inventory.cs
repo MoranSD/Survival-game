@@ -8,6 +8,8 @@ namespace InventorySystem
     {
         public static Inventory Instance;
 
+        public static event System.Action<bool> OnChangeInventoryVisibleStateEvent;
+
         public Dictionary<Vector2Int, GameItemInventoryData> Items { get; private set; }
         public UIInventory UIInventory { get; private set; }
 
@@ -42,6 +44,8 @@ namespace InventorySystem
             {
                 if (UIInventory.IsVisible) UIInventory.Hide();
                 else UIInventory.Show();
+
+                OnChangeInventoryVisibleStateEvent?.Invoke(UIInventory.IsVisible);
             }
         }
         public void TryMergeCells(InventoryCell dragCell, InventoryCell mergeCell)//тут добавить from to с типом либо вектора, либо ячеек

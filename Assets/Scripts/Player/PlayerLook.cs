@@ -3,15 +3,26 @@ using UnityEngine;
 namespace Player
 {
 	public class PlayerLook : MonoBehaviour
-	{
-		[SerializeField] private float _turnSpeed;
+    {
+        public bool CanTurn { get; private set; } = true;
+
+        [SerializeField] private float _turnSpeed;
         [SerializeField] private float _lookXLimit;
 		[SerializeField] private Transform _faceCameraTF;
 
         private Vector2 _currentRotation = Vector2.zero;
-
+        private void Awake()
+        {
+            InventorySystem.Inventory.OnChangeInventoryVisibleStateEvent += OnChangeInventoryState;
+        }
+        private void OnDisable()
+        {
+            InventorySystem.Inventory.OnChangeInventoryVisibleStateEvent -= OnChangeInventoryState;
+        }
         private void Update()
         {
+            if (CanTurn == false) return;
+
             HandleLookInput();
 
             UpdateFaceTransform();
@@ -28,5 +39,6 @@ namespace Player
             _faceCameraTF.localRotation = Quaternion.Euler(_currentRotation.x, 0, 0);
             transform.rotation = Quaternion.Euler(0, _currentRotation.y, 0);
         }
+        private void OnChangeInventoryState(bool state) => CanTurn = !state;
     }
 }

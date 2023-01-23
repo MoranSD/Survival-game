@@ -5,6 +5,8 @@ namespace Player
 	[RequireComponent(typeof(CharacterController))]
 	public class PlayerMovement : MonoBehaviour
     {
+        public bool CanMove { get; private set; } = true;
+
         [SerializeField] private float _moveSpeed;
         [SerializeField] private float _jumpForce;
         [SerializeField] private Transform _faceCameraTF;
@@ -18,9 +20,17 @@ namespace Player
         private void Awake()
         {
             _characterController = GetComponent<CharacterController>();
+
+            InventorySystem.Inventory.OnChangeInventoryVisibleStateEvent += OnChangeInventoryState;
+        }
+        private void OnDisable()
+        {
+            InventorySystem.Inventory.OnChangeInventoryVisibleStateEvent -= OnChangeInventoryState;
         }
         private void Update()
         {
+            if (CanMove == false) return;
+
             Vector3 moveDirection = GetMoveDirection();
             SetPhysicsVelocity(ref moveDirection.y);
 
@@ -45,5 +55,6 @@ namespace Player
 
             value = _gravity * Time.deltaTime;
         }
+        private void OnChangeInventoryState(bool state) => CanMove = !state;
     }
 }
