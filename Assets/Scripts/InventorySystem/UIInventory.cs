@@ -6,6 +6,8 @@ namespace InventorySystem
 {
 	public class UIInventory
 	{
+        public Canvas MainCanvas { get; private set; }
+
         private Transform _mainCellsContainer;
         private Transform _fastCellsContainer;
         private InventoryCell _cellPrefab;
@@ -13,8 +15,10 @@ namespace InventorySystem
         private InventoryCell[] _mainCells;
         private InventoryCell[] _fastCells;
 
-        public UIInventory(Transform mainCellsContainer, Transform fastCellsContainer, InventoryCell cellPrefab)
+        public UIInventory(Canvas mainCanvas, Transform mainCellsContainer, Transform fastCellsContainer, InventoryCell cellPrefab)
         {
+            MainCanvas = mainCanvas;
+
             _mainCellsContainer = mainCellsContainer;
             _fastCellsContainer = fastCellsContainer;
             _cellPrefab = cellPrefab;

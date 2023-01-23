@@ -9,12 +9,13 @@ namespace InventorySystem
         public static Inventory Instance;
 
         public Dictionary<Vector2Int, GameItemInventoryData> Items { get; private set; }
+        public UIInventory UIInventory { get; private set; }
 
         public const int Columns = 5;
         public const int Rows = 5;
         public const int FastSlotsCount = 5;
 
-        private UIInventory _uiInventory;
+        [SerializeField] private Canvas _mainCanvas;
         [SerializeField] private Transform _mainCellsContainer;
         [SerializeField] private Transform _fastCellsContainer;
         [SerializeField] private InventoryCell _cellPrefab;
@@ -25,13 +26,13 @@ namespace InventorySystem
             else Destroy(this.gameObject);
 
             Items = new Dictionary<Vector2Int, GameItemInventoryData>();
-            _uiInventory = new UIInventory(_mainCellsContainer, _fastCellsContainer, _cellPrefab);
-            _uiInventory.CreateCells();
+            UIInventory = new UIInventory(_mainCanvas, _mainCellsContainer, _fastCellsContainer, _cellPrefab);
+            UIInventory.CreateCells();
         }
         private void Start()
         {
             if (TryLoadData())
-                _uiInventory.UpdateCells();
+                UIInventory.UpdateCells();
         }
         private void Update()
         {
@@ -50,22 +51,53 @@ namespace InventorySystem
                     Destroy(item.gameObject);
             }
         }
-        public bool TryMergeCells()//тут добавить from to с типом либо вектора, либо ячеек
+        public void TryMergeCells(InventoryCell dragCell, InventoryCell mergeCell)//тут добавить from to с типом либо вектора, либо ячеек
         {
-            return false;
+            /*
+             * сначала проверить есть ли в драг вообще предмет
+             * потом проверить есть ли предмет в мердже
+             */
+
+            if (Items.ContainsKey(dragCell.GridPosition))
+            {
+                GameItemInventoryData dragItemData = Items[dragCell.GridPosition];
+
+                if (Items.ContainsKey(mergeCell.GridPosition))
+                {
+                    GameItemInventoryData mergeItemData = Items[mergeCell.GridPosition];
+
+                    if (dragItemData.baseData.Id == mergeItemData.baseData.Id && dragItemData.baseData.IsStackable)
+                    {
+                        int freeSlotsCount = mergeItemData.baseData.maxStackCount - mergeItemData.baseData.currentCount;
+                        if (freeSlotsCount >= dragItemData.baseData.currentCount)
+                        {
+                            Items[mergeCell.GridPosition].baseData.currentCount += Items[dragCell.GridPosition].baseData.currentCount;
+                            Items.Remove(dragCell.GridPosition);
+                        }
+                    }
+                }
+                else
+                {
+                    Items.Add(mergeCell.GridPosition, dragItemData);
+                    Items.Remove(dragCell.GridPosition);
+                }
+
+                UIInventory.UpdateCell(dragCell);
+                UIInventory.UpdateCell(mergeCell);
+            }
         }
         public bool TryAddItem(GameItem gameItem)
         {
             InventoryCell freeCell;
-            if (gameItem.BaseData.IsStackable) freeCell = _uiInventory.GetFreeCellWithStackableItem(gameItem.BaseData.Id, gameItem.BaseData.currentCount);
-            else freeCell = _uiInventory.GetFreeCell();
+            if (gameItem.BaseData.IsStackable) freeCell = UIInventory.GetFreeCellWithStackableItem(gameItem.BaseData.Id, gameItem.BaseData.currentCount);
+            else freeCell = UIInventory.GetFreeCell();
 
             if (freeCell != null)
             {
                 if (freeCell.IsEmpty) Items.Add(freeCell.GridPosition, new GameItemInventoryData(gameItem.BaseData, gameItem.UnicData));
                 else Items[freeCell.GridPosition].baseData.currentCount += gameItem.BaseData.currentCount;
 
-                _uiInventory.UpdateCell(freeCell);
+                UIInventory.UpdateCell(freeCell);
                 return true;
             }
 
