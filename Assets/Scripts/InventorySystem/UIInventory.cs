@@ -4,21 +4,23 @@ using System.Collections.Generic;
 
 namespace InventorySystem
 {
-	public class UIInventory : MonoBehaviour
+	public class UIInventory
 	{
-        [SerializeField] private Transform _mainCellsContainer;
-        [SerializeField] private Transform _fastCellsContainer;
-        [SerializeField] private InventoryCell _cellPrefab;
+        private Transform _mainCellsContainer;
+        private Transform _fastCellsContainer;
+        private InventoryCell _cellPrefab;
 
         private InventoryCell[] _mainCells;
         private InventoryCell[] _fastCells;
 
-        private void Awake()
+        public UIInventory(Transform mainCellsContainer, Transform fastCellsContainer, InventoryCell cellPrefab)
         {
-            CreateCells();
+            _mainCellsContainer = mainCellsContainer;
+            _fastCellsContainer = fastCellsContainer;
+            _cellPrefab = cellPrefab;
         }
 
-        private void CreateCells()
+        public void CreateCells()
         {
             _mainCells = new InventoryCell[Inventory.Columns * Inventory.Rows];
 
@@ -27,7 +29,7 @@ namespace InventorySystem
             {
                 for (int x = 0; x < Inventory.Rows; x++)
                 {
-                    InventoryCell cell = Instantiate(_cellPrefab, _mainCellsContainer);
+                    InventoryCell cell = Object.Instantiate(_cellPrefab, _mainCellsContainer);
                     cell.GridPosition = new Vector2Int(x, y);
                     _mainCells[i] = cell;
                     i++;
@@ -38,7 +40,7 @@ namespace InventorySystem
 
             for (int x = 0; x < Inventory.FastSlotsCount; x++)
             {
-                InventoryCell cell = Instantiate(_cellPrefab, _fastCellsContainer);
+                InventoryCell cell = Object.Instantiate(_cellPrefab, _fastCellsContainer);
                 cell.GridPosition = new Vector2Int(x, -1);//-1 bcz fast slots below main slots
                 _fastCells[x] = cell;
             }

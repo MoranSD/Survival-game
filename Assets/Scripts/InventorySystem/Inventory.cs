@@ -14,7 +14,10 @@ namespace InventorySystem
         public const int Rows = 5;
         public const int FastSlotsCount = 5;
 
-        [SerializeField] private UIInventory _uiInventory;
+        private UIInventory _uiInventory;
+        [SerializeField] private Transform _mainCellsContainer;
+        [SerializeField] private Transform _fastCellsContainer;
+        [SerializeField] private InventoryCell _cellPrefab;
 
         private void Awake()
         {
@@ -22,6 +25,8 @@ namespace InventorySystem
             else Destroy(this.gameObject);
 
             Items = new Dictionary<Vector2Int, GameItemInventoryData>();
+            _uiInventory = new UIInventory(_mainCellsContainer, _fastCellsContainer, _cellPrefab);
+            _uiInventory.CreateCells();
         }
         private void Start()
         {
