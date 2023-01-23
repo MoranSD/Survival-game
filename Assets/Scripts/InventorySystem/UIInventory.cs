@@ -7,7 +7,9 @@ namespace InventorySystem
 	public class UIInventory
 	{
         public Canvas MainCanvas { get; private set; }
+        public bool IsVisible { get; private set; } = false;
 
+        private GameObject _panel;
         private Transform _mainCellsContainer;
         private Transform _fastCellsContainer;
         private InventoryCell _cellPrefab;
@@ -15,15 +17,17 @@ namespace InventorySystem
         private InventoryCell[] _mainCells;
         private InventoryCell[] _fastCells;
 
-        public UIInventory(Canvas mainCanvas, Transform mainCellsContainer, Transform fastCellsContainer, InventoryCell cellPrefab)
+        public UIInventory(Canvas mainCanvas, GameObject menuPanel, Transform mainCellsContainer, Transform fastCellsContainer, InventoryCell cellPrefab)
         {
             MainCanvas = mainCanvas;
+            _panel = menuPanel;
 
             _mainCellsContainer = mainCellsContainer;
             _fastCellsContainer = fastCellsContainer;
             _cellPrefab = cellPrefab;
         }
-
+        public void Show() => _panel.SetActive(true);
+        public void Hide() => _panel.SetActive(false);
         public void CreateCells()
         {
             _mainCells = new InventoryCell[Inventory.Columns * Inventory.Rows];

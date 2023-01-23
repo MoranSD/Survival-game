@@ -16,6 +16,7 @@ namespace InventorySystem
         public const int FastSlotsCount = 5;
 
         [SerializeField] private Canvas _mainCanvas;
+        [SerializeField] private GameObject _menuPanel;
         [SerializeField] private Transform _mainCellsContainer;
         [SerializeField] private Transform _fastCellsContainer;
         [SerializeField] private InventoryCell _cellPrefab;
@@ -26,7 +27,8 @@ namespace InventorySystem
             else Destroy(this.gameObject);
 
             Items = new Dictionary<Vector2Int, GameItemInventoryData>();
-            UIInventory = new UIInventory(_mainCanvas, _mainCellsContainer, _fastCellsContainer, _cellPrefab);
+            UIInventory = new UIInventory(_mainCanvas, _menuPanel, _mainCellsContainer, _fastCellsContainer, _cellPrefab);
+            UIInventory.Hide();
             UIInventory.CreateCells();
         }
         private void Start()
@@ -36,55 +38,41 @@ namespace InventorySystem
         }
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.E))
+            if (Input.GetKeyDown(KeyCode.F)) 
             {
-                GameItem item = Instantiate(GameItemsCollector.Instance.GetItem(1));
-
-                if (TryAddItem(item))
-                    Destroy(item.gameObject);
-            }
-            if (Input.GetKeyDown(KeyCode.F))
-            {
-                GameItem item = Instantiate(GameItemsCollector.Instance.GetItem(0));
-
-                if (TryAddItem(item))
-                    Destroy(item.gameObject);
+                if (UIInventory.IsVisible) UIInventory.Hide();
+                else UIInventory.Show();
             }
         }
         public void TryMergeCells(InventoryCell dragCell, InventoryCell mergeCell)//тут добавить from to с типом либо вектора, либо €чеек
         {
-            /*
-             * сначала проверить есть ли в драг вообще предмет
-             * потом проверить есть ли предмет в мердже
-             */
+            if (Items.ContainsKey(dragCell.GridPosition) == false)
+                throw new System.Exception("You trying to drag empty cell");
 
-            if (Items.ContainsKey(dragCell.GridPosition))
+            GameItemInventoryData dragItemData = Items[dragCell.GridPosition];
+
+            if (Items.ContainsKey(mergeCell.GridPosition))
             {
-                GameItemInventoryData dragItemData = Items[dragCell.GridPosition];
+                GameItemInventoryData mergeItemData = Items[mergeCell.GridPosition];
 
-                if (Items.ContainsKey(mergeCell.GridPosition))
+                if (dragItemData.baseData.Id == mergeItemData.baseData.Id && dragItemData.baseData.IsStackable)
                 {
-                    GameItemInventoryData mergeItemData = Items[mergeCell.GridPosition];
-
-                    if (dragItemData.baseData.Id == mergeItemData.baseData.Id && dragItemData.baseData.IsStackable)
+                    int freeSlotsCount = mergeItemData.baseData.maxStackCount - mergeItemData.baseData.currentCount;
+                    if (freeSlotsCount >= dragItemData.baseData.currentCount)
                     {
-                        int freeSlotsCount = mergeItemData.baseData.maxStackCount - mergeItemData.baseData.currentCount;
-                        if (freeSlotsCount >= dragItemData.baseData.currentCount)
-                        {
-                            Items[mergeCell.GridPosition].baseData.currentCount += Items[dragCell.GridPosition].baseData.currentCount;
-                            Items.Remove(dragCell.GridPosition);
-                        }
+                        Items[mergeCell.GridPosition].baseData.currentCount += Items[dragCell.GridPosition].baseData.currentCount;
+                        Items.Remove(dragCell.GridPosition);
                     }
                 }
-                else
-                {
-                    Items.Add(mergeCell.GridPosition, dragItemData);
-                    Items.Remove(dragCell.GridPosition);
-                }
-
-                UIInventory.UpdateCell(dragCell);
-                UIInventory.UpdateCell(mergeCell);
             }
+            else
+            {
+                Items.Add(mergeCell.GridPosition, dragItemData);
+                Items.Remove(dragCell.GridPosition);
+            }
+
+            UIInventory.UpdateCell(dragCell);
+            UIInventory.UpdateCell(mergeCell);
         }
         public bool TryAddItem(GameItem gameItem)
         {
