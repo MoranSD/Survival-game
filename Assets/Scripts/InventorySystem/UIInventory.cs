@@ -4,10 +4,10 @@ using System.Collections.Generic;
 
 namespace InventorySystem
 {
-	public class UIInventory
+    internal class UIInventory
 	{
-        public Canvas MainCanvas { get; private set; }
-        public bool IsVisible { get; private set; } = false;
+        internal Canvas MainCanvas { get; private set; }
+        internal bool IsVisible { get; private set; } = false;
 
         private GameObject _panel;
         private Transform _mainCellsContainer;
@@ -17,7 +17,9 @@ namespace InventorySystem
         private InventoryCell[] _mainCells;
         private InventoryCell[] _fastCells;
 
-        public UIInventory(Canvas mainCanvas, GameObject menuPanel, Transform mainCellsContainer, Transform fastCellsContainer, InventoryCell cellPrefab)
+        private Inventory _inventory;
+
+        internal UIInventory(Canvas mainCanvas, GameObject menuPanel, Transform mainCellsContainer, Transform fastCellsContainer, InventoryCell cellPrefab, Inventory inventory)
         {
             MainCanvas = mainCanvas;
             _panel = menuPanel;
@@ -25,45 +27,49 @@ namespace InventorySystem
             _mainCellsContainer = mainCellsContainer;
             _fastCellsContainer = fastCellsContainer;
             _cellPrefab = cellPrefab;
+
+            _inventory = inventory;
         }
-        public void Show()
+        internal void Show()
         {
             _panel.SetActive(true);
             IsVisible = true;
         }
-        public void Hide()
+        internal void Hide()
         {
             _panel.SetActive(false);
             IsVisible = false;
         }
-        public void CreateCells()
+        internal void CreateCells()
         {
-            _mainCells = new InventoryCell[Inventory.Columns * Inventory.Rows];
+            _mainCells = new InventoryCell[_inventory.Columns * _inventory.Rows];
 
             int i = 0;
-            for (int y = Inventory.Columns - 1; y >= 0; y--)
+            for (int y = _inventory.Columns - 1; y >= 0; y--)
             {
-                for (int x = 0; x < Inventory.Rows; x++)
+                for (int x = 0; x < _inventory.Rows; x++)
                 {
                     InventoryCell cell = Object.Instantiate(_cellPrefab, _mainCellsContainer);
                     cell.GridPosition = new Vector2Int(x, y);
+                    cell.Inventory = _inventory;
                     _mainCells[i] = cell;
                     i++;
                 }
             }
 
-            _fastCells = new InventoryCell[Inventory.FastSlotsCount];
+            _fastCells = new InventoryCell[_inventory.FastSlotsCount];
 
-            for (int x = 0; x < Inventory.FastSlotsCount; x++)
+            for (int x = 0; x < _inventory.FastSlotsCount; x++)
             {
                 InventoryCell cell = Object.Instantiate(_cellPrefab, _fastCellsContainer);
                 cell.GridPosition = new Vector2Int(x, -1);//-1 bcz fast slots below main slots
+                cell.Inventory = _inventory;
                 _fastCells[x] = cell;
             }
         }
-        public void UpdateCells()
+        internal void UpdateCells()
         {
-            Dictionary<Vector2Int, GameItemInventoryData> Items = Inventory.Instance.Items;
+            Dictionary<Vector2Int, GameItemInventoryData> Items = _inventory.Items;
 
             for (int i = 0; i < _mainCells.Length; i++)
             {
@@ -90,11 +96,11 @@ namespace InventorySystem
                 }
             }
         }
-        public void UpdateCell(InventoryCell cell)
+        internal void UpdateCell(InventoryCell cell)
         {
-            if (Inventory.Instance.Items.ContainsKey(cell.GridPosition))
+            if (_inventory.Items.ContainsKey(cell.GridPosition))
             {
-                BaseGameItemData itemData = Inventory.Instance.Items[cell.GridPosition].baseData; 
+                BaseGameItemData itemData = _inventory.Items[cell.GridPosition].baseData; 
                 cell.Render(itemData);
             }
             else
@@ -102,7 +108,7 @@ namespace InventorySystem
                 cell.ResetRender();
             }
         }
-        public InventoryCell GetFreeCell()
+        internal InventoryCell GetFreeCell()
         {
             for (int i = 0; i < _mainCells.Length; i++)
                 if (_mainCells[i].IsEmpty) return _mainCells[i];
@@ -112,7 +118,7 @@ namespace InventorySystem
 
             return null;
         }
-        public InventoryCell GetFreeCellWithStackableItem(int itemId, int neededSlotsCount)
+        internal InventoryCell GetFreeCellWithStackableItem(int itemId, int neededSlotsCount)
         {
             if (CheckCells(_mainCells, out InventoryCell mainCell)) return mainCell;
             if (CheckCells(_fastCells, out InventoryCell fastCell)) return fastCell;
@@ -126,7 +132,7 @@ namespace InventorySystem
                 {
                     if (cells[i].IsEmpty == false)
                     {
-                        BaseGameItemData itemData = Inventory.Instance.Items[cells[i].GridPosition].baseData;
+                        BaseGameItemData itemData = _inventory.Items[cells[i].GridPosition].baseData;
                         if (itemData.Id == itemId)
                         {
                             int freeSlotsInCell = itemData.maxStackCount - itemData.currentCount;

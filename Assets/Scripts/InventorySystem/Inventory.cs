@@ -1,54 +1,31 @@
 using System.Collections.Generic;
 using UnityEngine;
 using GameItems;
+using Player;
 
 namespace InventorySystem
 {
-    public class Inventory : MonoBehaviour
+    internal class Inventory
     {
-        public static Inventory Instance;
+        internal Dictionary<Vector2Int, GameItemInventoryData> Items { get; private set; }
+        internal UIInventory UIInventory { get; private set; }
 
-        public static event System.Action<bool> OnChangeInventoryVisibleStateEvent;
+        internal int Columns = 5;
+        internal int Rows = 5;
+        internal int FastSlotsCount = 5;
 
-        public Dictionary<Vector2Int, GameItemInventoryData> Items { get; private set; }
-        public UIInventory UIInventory { get; private set; }
-
-        public const int Columns = 5;
-        public const int Rows = 5;
-        public const int FastSlotsCount = 5;
-
-        [SerializeField] private Canvas _mainCanvas;
-        [SerializeField] private GameObject _menuPanel;
-        [SerializeField] private Transform _mainCellsContainer;
-        [SerializeField] private Transform _fastCellsContainer;
-        [SerializeField] private InventoryCell _cellPrefab;
-
-        private void Awake()
+        internal Inventory(Canvas mainCanvas, GameObject menuPanel, Transform mainCellsContainer, Transform fastCellsContainer, InventoryCell cellPrefab, int columns = 5, int rows = 5, int fastSlotsCount = 5)
         {
-            if (Instance == null) Instance = this;
-            else Destroy(this.gameObject);
+            Columns = columns;
+            Rows = rows;
+            FastSlotsCount = fastSlotsCount;
 
             Items = new Dictionary<Vector2Int, GameItemInventoryData>();
-            UIInventory = new UIInventory(_mainCanvas, _menuPanel, _mainCellsContainer, _fastCellsContainer, _cellPrefab);
+            UIInventory = new UIInventory(mainCanvas, menuPanel, mainCellsContainer, fastCellsContainer, cellPrefab, this);
             UIInventory.Hide();
             UIInventory.CreateCells();
         }
-        private void Start()
-        {
-            if (TryLoadData())
-                UIInventory.UpdateCells();
-        }
-        private void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.F)) 
-            {
-                if (UIInventory.IsVisible) UIInventory.Hide();
-                else UIInventory.Show();
-
-                OnChangeInventoryVisibleStateEvent?.Invoke(UIInventory.IsVisible);
-            }
-        }
-        public void TryMergeCells(InventoryCell dragCell, InventoryCell mergeCell)//тут добавить from to с типом либо вектора, либо ячеек
+        internal void TryMergeCells(InventoryCell dragCell, InventoryCell mergeCell)//тут добавить from to с типом либо вектора, либо ячеек
         {
             if (Items.ContainsKey(dragCell.GridPosition) == false)
                 throw new System.Exception("You trying to drag empty cell");
@@ -78,7 +55,7 @@ namespace InventorySystem
             UIInventory.UpdateCell(dragCell);
             UIInventory.UpdateCell(mergeCell);
         }
-        public bool TryAddItem(GameItem gameItem)
+        internal bool TryAddItem(GameItem gameItem)
         {
             InventoryCell freeCell;
             if (gameItem.BaseData.IsStackable) freeCell = UIInventory.GetFreeCellWithStackableItem(gameItem.BaseData.Id, gameItem.BaseData.currentCount);
@@ -96,20 +73,9 @@ namespace InventorySystem
             return false;
         }
 
-        private bool TryLoadData()
+        internal bool TryLoadData(Dictionary<Vector2Int, GameItemInventoryData> data)
         {
             return false;
-        }
-    }
-    public class GameItemInventoryData
-    {
-        public BaseGameItemData baseData;
-        public object unicData;
-
-        public GameItemInventoryData(BaseGameItemData baseData, object unicData)
-        {
-            this.baseData = baseData;
-            this.unicData = unicData;
         }
     }
 }

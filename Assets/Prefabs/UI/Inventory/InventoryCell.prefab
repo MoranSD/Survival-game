@@ -9,9 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4152091881871953421}
-  - component: {fileID: 6064047174973391992}
   - component: {fileID: 4103192493253945970}
   - component: {fileID: 277690655237163014}
+  - component: {fileID: 5985542165868443082}
   m_Layer: 5
   m_Name: InventoryCell
   m_TagString: Untagged
@@ -41,20 +41,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &6064047174973391992
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 878408123268811504}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e813bd45aa17b5145ba96022f9427027, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _countTitle: {fileID: 7626719049260754050}
-  _icon: {fileID: 3042610734469732599}
 --- !u!222 &4103192493253945970
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -93,6 +79,20 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &5985542165868443082
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 878408123268811504}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20909a3623067c84f8a7542479e3e045, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  countTitle: {fileID: 7626719049260754050}
+  icon: {fileID: 3042610734469732599}
 --- !u!1 &2725718878627476209
 GameObject:
   m_ObjectHideFlags: 0

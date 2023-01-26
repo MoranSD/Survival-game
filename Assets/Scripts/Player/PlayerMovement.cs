@@ -3,9 +3,9 @@ using UnityEngine;
 namespace Player
 {
 	[RequireComponent(typeof(CharacterController))]
-	public class PlayerMovement : MonoBehaviour
+    internal class PlayerMovement : MonoBehaviour
     {
-        public bool CanMove { get; private set; } = true;
+        internal bool CanMove { get; set; } = true;
 
         [SerializeField] private float _moveSpeed;
         [SerializeField] private float _jumpForce;
@@ -20,12 +20,6 @@ namespace Player
         private void Awake()
         {
             _characterController = GetComponent<CharacterController>();
-
-            InventorySystem.Inventory.OnChangeInventoryVisibleStateEvent += OnChangeInventoryState;
-        }
-        private void OnDisable()
-        {
-            InventorySystem.Inventory.OnChangeInventoryVisibleStateEvent -= OnChangeInventoryState;
         }
         private void Update()
         {
@@ -55,6 +49,5 @@ namespace Player
 
             value = _gravity * Time.deltaTime;
         }
-        private void OnChangeInventoryState(bool state) => CanMove = !state;
     }
 }

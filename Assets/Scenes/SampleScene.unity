@@ -950,14 +950,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 1909682433}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f7bda8b547c202c4b80e553571a74a5e, type: 3}
+  m_Script: {fileID: 11500000, guid: 60e05694975b30e408a31701465ca25d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _mainCanvas: {fileID: 2102439895}
   _menuPanel: {fileID: 107842013}
   _mainCellsContainer: {fileID: 1721471486}
   _fastCellsContainer: {fileID: 1193103716}
-  _cellPrefab: {fileID: 6064047174973391992, guid: dab69498a90b3a3438c00c88f6d49ecc, type: 3}
+  _cellPrefab: {fileID: 5985542165868443082, guid: dab69498a90b3a3438c00c88f6d49ecc, type: 3}
 --- !u!1 &1949815096
 GameObject:
   m_ObjectHideFlags: 0
