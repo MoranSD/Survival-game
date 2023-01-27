@@ -1,18 +1,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 using GameItems;
-using Player;
 
 namespace InventorySystem
 {
     internal class Inventory
     {
-        internal Dictionary<Vector2Int, GameItemInventoryData> Items { get; private set; }
+        public event System.Action<int> OnUpdateItemInFastSlots;
+
+        internal Dictionary<Vector2Int, IGameItemData> Items { get; private set; }
         internal UIInventory UIInventory { get; private set; }
 
-        internal int Columns = 5;
-        internal int Rows = 5;
-        internal int FastSlotsCount = 5;
+        internal int Columns { get; private set; }
+        internal int Rows { get; private set; }
+        internal int FastSlotsCount { get; private set; }
 
         internal Inventory(Canvas mainCanvas, GameObject menuPanel, Transform mainCellsContainer, Transform fastCellsContainer, InventoryCell cellPrefab, int columns = 5, int rows = 5, int fastSlotsCount = 5)
         {
@@ -20,62 +21,202 @@ namespace InventorySystem
             Rows = rows;
             FastSlotsCount = fastSlotsCount;
 
-            Items = new Dictionary<Vector2Int, GameItemInventoryData>();
-            UIInventory = new UIInventory(mainCanvas, menuPanel, mainCellsContainer, fastCellsContainer, cellPrefab, this);
+            Items = new Dictionary<Vector2Int, IGameItemData>();
+            UIInventory = new UIInventory(mainCanvas, menuPanel, mainCellsContainer, fastCellsContainer, cellPrefab);
             UIInventory.Hide();
-            UIInventory.CreateCells();
+            UIInventory.CreateCells(this);
         }
-        internal void TryMergeCells(InventoryCell dragCell, InventoryCell mergeCell)//тут добавить from to с типом либо вектора, либо €чеек
+        internal Inventory(Canvas mainCanvas, GameObject menuPanel, Transform mainCellsContainer, InventoryCell cellPrefab, int columns = 5, int rows = 5)
         {
-            if (Items.ContainsKey(dragCell.GridPosition) == false)
+            Columns = columns;
+            Rows = rows;
+            FastSlotsCount = 0;
+
+            Items = new Dictionary<Vector2Int, IGameItemData>();
+            UIInventory = new UIInventory(mainCanvas, menuPanel, mainCellsContainer, cellPrefab);
+            UIInventory.Hide();
+            UIInventory.CreateCells(this);
+        }
+        internal bool TryMergeCells(InventoryCell dragCell, InventoryCell mergeCell)//mergeCell это всегда наша €чейка, dragCell может быть из другого инвентар€
+        {
+            if (IsHaveFreePositions() == false) return false;
+
+            if(dragCell.Inventory.Items.ContainsKey(dragCell.GridPosition) == false)
                 throw new System.Exception("You trying to drag empty cell");
 
-            GameItemInventoryData dragItemData = Items[dragCell.GridPosition];
+            IGameItemData dragItemData = dragCell.Inventory.Items[dragCell.GridPosition];
 
             if (Items.ContainsKey(mergeCell.GridPosition))
             {
-                GameItemInventoryData mergeItemData = Items[mergeCell.GridPosition];
+                IGameItemData mergeItemData = Items[mergeCell.GridPosition];
 
-                if (dragItemData.baseData.Id == mergeItemData.baseData.Id && dragItemData.baseData.IsStackable)
+                if (dragItemData.Id == mergeItemData.Id && dragItemData.IsStackable)
                 {
-                    int freeSlotsCount = mergeItemData.baseData.maxStackCount - mergeItemData.baseData.currentCount;
-                    if (freeSlotsCount >= dragItemData.baseData.currentCount)
+                    int freeSlotsCount = mergeItemData.MaxStackCount - mergeItemData.CurrentCount;
+                    if (freeSlotsCount >= dragItemData.CurrentCount)
                     {
-                        Items[mergeCell.GridPosition].baseData.currentCount += Items[dragCell.GridPosition].baseData.currentCount;
-                        Items.Remove(dragCell.GridPosition);
+                        Items[mergeCell.GridPosition].CurrentCount += dragItemData.CurrentCount;
+                    }
+                    else
+                    {
+                        return false;
                     }
                 }
             }
             else
             {
                 Items.Add(mergeCell.GridPosition, dragItemData);
-                Items.Remove(dragCell.GridPosition);
             }
 
-            UIInventory.UpdateCell(dragCell);
-            UIInventory.UpdateCell(mergeCell);
+            dragCell.Inventory.RemoveItem(dragCell.GridPosition);
+            UIInventory.UpdateCell(mergeCell.GridPosition, Items[mergeCell.GridPosition]);
+            return true;
         }
-        internal bool TryAddItem(GameItem gameItem)
+        internal bool IsHaveFreePositions()
         {
-            InventoryCell freeCell;
-            if (gameItem.BaseData.IsStackable) freeCell = UIInventory.GetFreeCellWithStackableItem(gameItem.BaseData.Id, gameItem.BaseData.currentCount);
-            else freeCell = UIInventory.GetFreeCell();
+            int maxSlotsCount = (Columns * Rows) + FastSlotsCount;
 
-            if (freeCell != null)
+            return Items.Count < maxSlotsCount;
+        }
+        internal bool TryAddItem(IGameItemData gameItem)
+        {
+            if (gameItem.IsStackable)
             {
-                if (freeCell.IsEmpty) Items.Add(freeCell.GridPosition, new GameItemInventoryData(gameItem.BaseData, gameItem.UnicData));
-                else Items[freeCell.GridPosition].baseData.currentCount += gameItem.BaseData.currentCount;
+                if(GetFreePositionWithStackableItem(out Vector2Int position, gameItem.Id, gameItem.CurrentCount))
+                {
+                    AddItemInPosition(position);
+                    return true;
+                }
+            }
+            else
+            {
+                if(GetFreePosition(out Vector2Int position))
+                {
+                    AddItemInPosition(position);
+                    return true;
+                }
+            }
 
-                UIInventory.UpdateCell(freeCell);
+            void AddItemInPosition(Vector2Int position)
+            {
+                if(Items.ContainsKey(position)) Items[position].CurrentCount += gameItem.CurrentCount;
+                else Items.Add(position, gameItem);
+                UIInventory.UpdateCell(position, Items[position]);
+                if (position.y == -1) OnUpdateItemInFastSlots?.Invoke(position.x);
+            }
+
+            return false;
+        }
+        internal void RemoveItem(Vector2Int position)
+        {
+            if (Items.ContainsKey(position))
+            {
+                Items.Remove(position);
+                UIInventory.UpdateCell(position, null);
+                if (position.y == -1) OnUpdateItemInFastSlots?.Invoke(position.x);
+            }
+        }
+        internal bool TryGetItem(Vector2Int position, out IGameItemData item)
+        {
+            if (Items.ContainsKey(position))
+            {
+                item = Items[position];
+                Items.Remove(position);
+                UIInventory.UpdateCell(position, null);
+                if (position.y == -1) OnUpdateItemInFastSlots?.Invoke(position.x);
                 return true;
             }
 
+            item = null;
             return false;
         }
-
-        internal bool TryLoadData(Dictionary<Vector2Int, GameItemInventoryData> data)
+        internal bool TryLoadData(Dictionary<Vector2Int, IGameItemData> data)
         {
             return false;
+        }
+        internal IGameItemData GetItemFromFastSlots(int slotId)
+        {
+            if (slotId < 0 || slotId >= FastSlotsCount)
+                throw new System.Exception("There is no fast slot with this id");
+
+            Vector2Int slotPosition = new Vector2Int(slotId, -1);
+
+            if (Items.ContainsKey(slotPosition)) return Items[slotPosition];
+            else return null;
+        }
+        private bool GetFreePosition(out Vector2Int position)
+        {
+            for (int y = Columns - 1; y >= 0; y--)
+            {
+                for (int x = 0; x < Rows; x++)
+                {
+                    Vector2Int nextCellPosition = new Vector2Int(x, y);
+                    if (Items.ContainsKey(nextCellPosition) == false)
+                    {
+                        position = nextCellPosition;
+                        return true;
+                    }
+                }
+            }
+
+            for (int x = 0; x < FastSlotsCount; x++)
+            {
+                Vector2Int nextCellPosition = new Vector2Int(x, -1);
+                if (Items.ContainsKey(nextCellPosition) == false)
+                {
+                    position = nextCellPosition;
+                    return true;
+                }
+            }
+
+            position = Vector2Int.zero;
+            return false;
+        }
+        private bool GetFreePositionWithStackableItem(out Vector2Int position, int itemId, int neededSlotsCount)
+        {
+            for (int y = Columns - 1; y >= 0; y--)
+            {
+                for (int x = 0; x < Rows; x++)
+                {
+                    Vector2Int nextItemPosition = new Vector2Int(x, y);
+                    if (Items.ContainsKey(nextItemPosition))
+                    {
+                        if (CheckItem(Items[nextItemPosition]))
+                        {
+                            position = nextItemPosition;
+                            return true;
+                        }
+                    }
+                }
+            }
+            for (int x = 0; x < FastSlotsCount; x++)
+            {
+                Vector2Int nextItemPosition = new Vector2Int(x, -1);
+                if (Items.ContainsKey(nextItemPosition))
+                {
+                    if (CheckItem(Items[nextItemPosition]))
+                    {
+                        position = nextItemPosition;
+                        return true;
+                    }
+                }
+            }
+
+            if (GetFreePosition(out position)) return true;
+
+            position = Vector2Int.zero;
+            return false;
+
+            bool CheckItem(IGameItemData item)
+            {
+                if (item.Id == itemId)
+                {
+                    int freeSlotsInCell = item.MaxStackCount - item.CurrentCount;
+                    if (freeSlotsInCell >= neededSlotsCount) return true;
+                }
+
+                return false;
+            }
         }
     }
 }

@@ -2,10 +2,11 @@
 using GameItems;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.EventSystems;
 
 namespace InventorySystem
 {
-    internal abstract class InventoryCell : MonoBehaviour
+    internal class InventoryCell : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
     {
         protected internal Inventory Inventory { get; set; }
         internal Vector2Int GridPosition { get; set; }
@@ -14,14 +15,15 @@ namespace InventorySystem
         [SerializeField] protected TextMeshProUGUI countTitle;
         [SerializeField] protected Image icon;
 
+        private bool _isDragging = false;
 
-        internal void Render(BaseGameItemData itemData)
+        internal void Render(IGameItemData itemData)
         {
-            if(itemData.currentCount == 1) countTitle.text = "";
-            else countTitle.text = itemData.currentCount.ToString();
+            if(itemData.CurrentCount == 1) countTitle.text = "";
+            else countTitle.text = itemData.CurrentCount.ToString();
 
             icon.gameObject.SetActive(true);
-            icon.sprite = itemData.icon;
+            icon.sprite = itemData.Icon;
 
             IsEmpty = false;
         }
@@ -32,5 +34,41 @@ namespace InventorySystem
             IsEmpty = true;
         }
 
+        public void OnBeginDrag(PointerEventData eventData)
+        {
+            if (Inventory.Items.ContainsKey(GridPosition))
+                _isDragging = true;
+
+            icon.raycastTarget = false;
+            icon.transform.SetParent(Inventory.UIInventory.MainCanvas.transform);
+        }
+
+        public void OnDrag(PointerEventData eventData)
+        {
+            if (_isDragging == false) return;
+
+            icon.transform.position = Input.mousePosition;
+        }
+
+        public void OnEndDrag(PointerEventData eventData)
+        {
+            if (_isDragging == false) return;
+
+            icon.raycastTarget = true;
+            icon.transform.SetParent(transform);
+            icon.transform.localPosition = Vector3.zero;
+            _isDragging = false;
+        }
+
+        public void OnDrop(PointerEventData eventData)
+        {
+            if (eventData.pointerDrag.transform.parent != null)
+            {
+                InventoryCell dragCell = eventData.pointerDrag.GetComponentInParent<InventoryCell>();
+
+                if (dragCell != null)
+                    Inventory.TryMergeCells(dragCell, this);
+            }
+        }
     }
 }

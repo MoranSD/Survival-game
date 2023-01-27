@@ -1,8 +1,10 @@
 namespace GameItems
 {
-    public class Axe : GameItem
+    internal class Axe : GameItemObject
     {
-        public override void LoadData(string DataPath)
+        protected internal override IGameItemData Data { get; protected set; }
+
+        internal override void InitData(IGameItemData data)
         {
             
         }

@@ -4,10 +4,10 @@ using UnityEngine;
 namespace GameItems
 {
 	[CreateAssetMenu(fileName = "GameItemsCollector", menuName = "GameItems/Collector")]
-	public class GameItemsCollector : ScriptableObject
+	internal class GameItemsCollector : ScriptableObject
 	{
 		private static GameItemsCollector _instance;
-		public static GameItemsCollector Instance
+		internal static GameItemsCollector Instance
 		{
 			get
 			{
@@ -18,14 +18,27 @@ namespace GameItems
 			}
 		}
 
-		[SerializeField] List<GameItem> _items;
+		[field: SerializeField] internal List<ItemInCollector> GameItems { get; private set; }
 
-		public GameItem GetItem(int index)
+		internal IGameItemData GetItem(int index)
 		{
-			if (index < 0 || index >= _items.Count)
+			if (index < 0 || index >= GameItems.Count)
 				throw new System.Exception("There is no item with index like this");
 
-			return _items[index];
+			return GameItems[index].ItemData;
+		}
+		internal GameItemObject GetItemObject(int index)
+		{
+			if (index < 0 || index >= GameItems.Count)
+				throw new System.Exception("There is no item with index like this");
+
+			return GameItems[index].ItemObject;
 		}
 	}
+	[System.Serializable]
+	internal struct ItemInCollector
+    {
+		[SerializeField] internal IGameItemData ItemData;
+		[SerializeField] internal GameItemObject ItemObject;
+    }
 }
