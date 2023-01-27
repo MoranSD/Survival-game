@@ -1,6 +1,6 @@
 using UnityEngine;
 using GameItems;
-using InventorySystem;
+using Cysharp.Threading.Tasks;
 
 namespace Player
 {
@@ -32,17 +32,23 @@ namespace Player
 			}
         }
 
-		internal void Show()
+		async internal void Show()
 		{
 			if (ItemObject != null)
+            {
 				ItemObject.Enter();
+				await UniTask.WaitWhile(() => ItemObject.IsActive == false);
+			}
 
 			IsActive = true;
 		}
-		internal void Hide()
+		async internal void Hide()
 		{
 			if (ItemObject != null)
+            {
 				ItemObject.Exit();
+				await UniTask.WaitWhile(() => ItemObject.IsActive);
+			}
 
 			IsActive = false;
 		}

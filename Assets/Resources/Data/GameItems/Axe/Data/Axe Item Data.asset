@@ -16,5 +16,8 @@ MonoBehaviour:
   <Icon>k__BackingField: {fileID: 548906964, guid: 86343657efd6d5641b7815d9a249edb5, type: 3}
   <MaxStackCount>k__BackingField: 1
   <MaxEndurance>k__BackingField: 100
+  <Damage>k__BackingField: 0
+  <DamageMultiplyForTypeTarget>k__BackingField: 0
+  <TargetTypes>k__BackingField: 00000000
   <CurrentCount>k__BackingField: 1
   <CurrentEndurance>k__BackingField: 100

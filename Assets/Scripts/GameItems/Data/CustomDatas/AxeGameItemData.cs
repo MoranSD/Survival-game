@@ -1,4 +1,6 @@
 using UnityEngine;
+using Enums;
+using System.Collections.Generic;
 
 namespace GameItems
 {
@@ -10,6 +12,9 @@ namespace GameItems
         [field: SerializeField] internal Sprite Icon { get; set; }
         [field: SerializeField] internal int MaxStackCount { get; set; }
         [field: SerializeField] internal int MaxEndurance { get; set; }
+        [field: SerializeField] internal int Damage { get; set; }
+        [field: SerializeField] internal int DamageMultiplyForTypeTarget { get; set; }
+        [field: SerializeField] internal List<DamageableTargetType> TargetTypes { get; set; }
         [field: Header("Динамические поля")]
         [field: SerializeField] internal int CurrentCount { get; set; }
         [field: SerializeField] internal int CurrentEndurance { get; set; }

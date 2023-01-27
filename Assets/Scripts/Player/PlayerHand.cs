@@ -2,6 +2,7 @@ using UnityEngine;
 using InventorySystem;
 using System.Collections.Generic;
 using GameItems;
+using Cysharp.Threading.Tasks;
 
 namespace Player
 {
@@ -14,7 +15,7 @@ namespace Player
         [SerializeField] private Canvas _mainCanvas;
         [SerializeField] private GameObject _menuPanel;
         [Header("Containers")]
-        [SerializeField] private Transform _itemInHandsContainer;
+        [SerializeField] private Transform _handsContainer;
         [SerializeField] private Transform _mainCellsContainer;
         [SerializeField] private Transform _fastCellsContainer;
         [Header("Prefabs")]
@@ -27,6 +28,8 @@ namespace Player
         private List<ItemInHands> _itemsInHands;
         private int _activeItem = 0;
 
+        private bool _isFreeToSwitchHand = true;
+
         private void Awake()
         {
             _playerMovement = GetComponent<PlayerMovement>();
@@ -37,7 +40,7 @@ namespace Player
             _itemsInHands = new List<ItemInHands>();
             for (int i = 0; i < Inventory.FastSlotsCount; i++)
             {
-                ItemInHands itemInHands = Instantiate(_itemInHandsPrefab, _itemInHandsContainer);
+                ItemInHands itemInHands = Instantiate(_itemInHandsPrefab, _handsContainer);
                 IGameItemData itemInInventory = Inventory.GetItemFromFastSlots(i);
                 itemInHands.SetItem(itemInInventory);
 
@@ -64,23 +67,35 @@ namespace Player
             }
 
             float mouseWheel = Input.GetAxis("Mouse ScrollWheel");
-            if(mouseWheel != 0 && _itemsInHands[_activeItem].IsActive)
-            {
-                _itemsInHands[_activeItem].Hide();
-
-                _activeItem += Mathf.RoundToInt(mouseWheel * 10);
-                if (_activeItem < 0) _activeItem = Inventory.FastSlotsCount - 1;
-                else if (_activeItem >= Inventory.FastSlotsCount) _activeItem = 0;
-
-                _itemsInHands[_activeItem].Show();
-            }
+            if(mouseWheel != 0 && _isFreeToSwitchHand)
+                SwitchItemInHandProcess(Mathf.RoundToInt(mouseWheel * 10));
 
             _itemsInHands[_activeItem].Interact();
+
+
+
 
             if (Input.GetKeyDown(KeyCode.E))
             {
                 Inventory.TryAddItem(GameItemsCollector.Instance.GetItem(0));
             }
+        }
+        async void SwitchItemInHandProcess(int switchDirection)
+        {
+            _isFreeToSwitchHand = false;
+            _itemsInHands[_activeItem].Hide();
+
+            await UniTask.WaitWhile(() => _itemsInHands[_activeItem].IsActive);
+
+            _activeItem += switchDirection;
+            if (_activeItem < 0) _activeItem = Inventory.FastSlotsCount - 1;
+            else if (_activeItem >= Inventory.FastSlotsCount) _activeItem = 0;
+
+            _itemsInHands[_activeItem].Show();
+
+            await UniTask.WaitWhile(() => _itemsInHands[_activeItem].IsActive == false);
+
+            _isFreeToSwitchHand = true;
         }
         private void UpdateItemInHands(int id)
         {
