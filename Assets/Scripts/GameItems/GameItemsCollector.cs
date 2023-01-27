@@ -25,7 +25,7 @@ namespace GameItems
 			if (index < 0 || index >= GameItems.Count)
 				throw new System.Exception("There is no item with index like this");
 
-			return GameItems[index].ItemData;
+			return (IGameItemData)GameItems[index].ItemData;
 		}
 		internal GameItemObject GetItemObject(int index)
 		{
@@ -38,7 +38,7 @@ namespace GameItems
 	[System.Serializable]
 	internal struct ItemInCollector
     {
-		[SerializeField] internal IGameItemData ItemData;
+		[SerializeField] internal ScriptableObject ItemData;
 		[SerializeField] internal GameItemObject ItemObject;
     }
 }

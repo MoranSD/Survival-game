@@ -5,11 +5,12 @@ namespace GameItems
 	[CreateAssetMenu(fileName = "Axe Item Data", menuName = "GameItems/Data/AxeItem data")]
 	internal class AxeGameItemData : ScriptableObject, IGameItemData
 	{
+        [field: Header("Статичные поля")]
         [field: SerializeField] internal int Id { get; set; }
         [field: SerializeField] internal Sprite Icon { get; set; }
         [field: SerializeField] internal int MaxStackCount { get; set; }
         [field: SerializeField] internal int MaxEndurance { get; set; }
-
+        [field: Header("Динамические поля")]
         [field: SerializeField] internal int CurrentCount { get; set; }
         [field: SerializeField] internal int CurrentEndurance { get; set; }
 

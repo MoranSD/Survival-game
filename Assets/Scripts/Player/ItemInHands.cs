@@ -24,26 +24,26 @@ namespace Player
 
 				GameItemObject newObjectPrefab = GameItemsCollector.Instance.GetItemObject(ItemData.Id);
 				ItemObject = Instantiate(newObjectPrefab, transform);
+				ItemObject.transform.localPosition = Vector3.zero;
 				ItemObject.InitData(ItemData);
-				ItemObject.gameObject.SetActive(IsActive);
+
+				if (IsActive) ItemObject.Enter();
+				else ItemObject.Exit();
 			}
         }
 
 		internal void Show()
 		{
 			if (ItemObject != null)
-            {
 				ItemObject.Enter();
-			}
 
 			IsActive = true;
 		}
-		internal void Hide(System.Action callBack)
+		internal void Hide()
 		{
 			if (ItemObject != null)
-			{
-				ItemObject.Exit(callBack);
-			}
+				ItemObject.Exit();
+
 			IsActive = false;
 		}
 		internal void Interact()

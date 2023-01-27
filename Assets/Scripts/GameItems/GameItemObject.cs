@@ -14,9 +14,9 @@ namespace GameItems
 		{
 
 		}
-		internal virtual void Exit(System.Action callBack)
+		internal virtual void Exit()
 		{
-			callBack?.Invoke();
+			
 		}
 	}
 }

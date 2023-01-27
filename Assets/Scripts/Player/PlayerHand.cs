@@ -10,12 +10,16 @@ namespace Player
 	{
         internal Inventory Inventory { get; private set; }
 
-        [SerializeField] private Transform _itemInHandsContainer;
+        [Header("UI")]
         [SerializeField] private Canvas _mainCanvas;
         [SerializeField] private GameObject _menuPanel;
+        [Header("Containers")]
+        [SerializeField] private Transform _itemInHandsContainer;
         [SerializeField] private Transform _mainCellsContainer;
         [SerializeField] private Transform _fastCellsContainer;
+        [Header("Prefabs")]
         [SerializeField] private InventoryCell _cellPrefab;
+        [SerializeField] private ItemInHands _itemInHandsPrefab;
 
         private PlayerMovement _playerMovement;
 		private PlayerLook _playerLook;
@@ -33,7 +37,7 @@ namespace Player
             _itemsInHands = new List<ItemInHands>();
             for (int i = 0; i < Inventory.FastSlotsCount; i++)
             {
-                ItemInHands itemInHands = Instantiate(new ItemInHands(), _itemInHandsContainer);
+                ItemInHands itemInHands = Instantiate(_itemInHandsPrefab, _itemInHandsContainer);
                 IGameItemData itemInInventory = Inventory.GetItemFromFastSlots(i);
                 itemInHands.SetItem(itemInInventory);
 
@@ -62,17 +66,21 @@ namespace Player
             float mouseWheel = Input.GetAxis("Mouse ScrollWheel");
             if(mouseWheel != 0 && _itemsInHands[_activeItem].IsActive)
             {
-                int oldItem = _activeItem;
+                _itemsInHands[_activeItem].Hide();
 
                 _activeItem += Mathf.RoundToInt(mouseWheel * 10);
-
                 if (_activeItem < 0) _activeItem = Inventory.FastSlotsCount - 1;
                 else if (_activeItem >= Inventory.FastSlotsCount) _activeItem = 0;
 
-                _itemsInHands[oldItem].Hide(_itemsInHands[_activeItem].Show);
+                _itemsInHands[_activeItem].Show();
             }
 
             _itemsInHands[_activeItem].Interact();
+
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                Inventory.TryAddItem(GameItemsCollector.Instance.GetItem(0));
+            }
         }
         private void UpdateItemInHands(int id)
         {

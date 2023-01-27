@@ -48,20 +48,16 @@ namespace InventorySystem
 
             if (Items.ContainsKey(mergeCell.GridPosition))
             {
+                if (dragItemData.IsStackable == false) return false;
+
                 IGameItemData mergeItemData = Items[mergeCell.GridPosition];
 
-                if (dragItemData.Id == mergeItemData.Id && dragItemData.IsStackable)
-                {
-                    int freeSlotsCount = mergeItemData.MaxStackCount - mergeItemData.CurrentCount;
-                    if (freeSlotsCount >= dragItemData.CurrentCount)
-                    {
-                        Items[mergeCell.GridPosition].CurrentCount += dragItemData.CurrentCount;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
+                if (dragItemData.Id != mergeItemData.Id) return false;
+
+                int freeSlotsCount = mergeItemData.MaxStackCount - mergeItemData.CurrentCount;
+                if (freeSlotsCount < dragItemData.CurrentCount) return false;
+
+                Items[mergeCell.GridPosition].CurrentCount += dragItemData.CurrentCount;
             }
             else
             {
@@ -70,6 +66,7 @@ namespace InventorySystem
 
             dragCell.Inventory.RemoveItem(dragCell.GridPosition);
             UIInventory.UpdateCell(mergeCell.GridPosition, Items[mergeCell.GridPosition]);
+            if (mergeCell.GridPosition.y == -1) OnUpdateItemInFastSlots?.Invoke(mergeCell.GridPosition.x);
             return true;
         }
         internal bool IsHaveFreePositions()

@@ -12,3 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 87a91915467a4bf40ab462e36a6e0f92, type: 3}
   m_Name: Axe Item Data
   m_EditorClassIdentifier: 
+  <Id>k__BackingField: 0
+  <Icon>k__BackingField: {fileID: 548906964, guid: 86343657efd6d5641b7815d9a249edb5, type: 3}
+  <MaxStackCount>k__BackingField: 1
+  <MaxEndurance>k__BackingField: 100
+  <CurrentCount>k__BackingField: 1
+  <CurrentEndurance>k__BackingField: 100

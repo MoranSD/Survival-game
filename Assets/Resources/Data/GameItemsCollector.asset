@@ -12,4 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3dd7ea456c1dc643a700ae8a141f691, type: 3}
   m_Name: GameItemsCollector
   m_EditorClassIdentifier: 
-  <GameItems>k__BackingField: []
+  <GameItems>k__BackingField:
+  - ItemData: {fileID: 11400000, guid: 65073e7726602ea4491ac86ca398b558, type: 2}
+    ItemObject: {fileID: 200271944052798958, guid: c583fbe5076cb0c4d8599a9f94daad80, type: 3}
